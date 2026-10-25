@@ -1,9 +1,14 @@
 # 闪耀色彩复读机
 
+![License: AGPL-3.0-or-later](https://img.shields.io/badge/License-AGPL--3.0--or--later-A42E2B)
+
 29 种复读模式。你说话，她用她的声音原样说回来。
 
 只有两件事：**语音合成（TTS）** 和 **实时复读**。没有对话，没有打电话，没有好感度，没有记忆，
 也不存任何一条记录——关掉页面就全忘了。
+
+改编自 [Sallyn0225/eidolon-sc](https://github.com/Sallyn0225/eidolon-sc) 的复读部分，协议同上游 AGPL-3.0-or-later。
+非官方粉丝作品，与万代南梦宫及《偶像大师》系列版权方无关。
 
 角色：illumination STARS、L'Antica、放課後クライマックスガールズ、アルストロメリア、
 ストレイライト、ノクチル、シーズ、コメティック 的 28 位小偶像，加上事务员七草叶月，共 29 位，
@@ -81,15 +86,21 @@ docs/                README 里那两张截图
 .cache/tts/          合成过的音频（按内容缓存，同一句不再花钱），可随时删
 ```
 
-## 和 eidolon-sc 的关系
+## 和 [Eidolon-SC](https://github.com/Sallyn0225/eidolon-sc) 的关系
 
-复读这条链路（`EchoComposer` + `engine.echo` + 本地 STT/TTS）是从 `eidolon-sc` 里抽出来的，只留下：
+本项目的「复读」链路（`EchoComposer` + `engine.echo` + 本地 STT/TTS）取自
+[Sallyn0225/eidolon-sc](https://github.com/Sallyn0225/eidolon-sc)，把那一块单独拆出来，
+重写成一个只做复读的零依赖小应用。保留的只有：
 
 - 你说一句 → 听成文字（百炼 Qwen3-ASR / 浏览器识别）
 - 同一句文字 → 用这位角色的 Fish Audio 音色念出来（`characters.toml` 里的 `voice_id`）
 - 气泡里留一行，标着「你说的」和「她复读的」
 
-没有搬过来的：对话模型、通话、好感度、记忆、成就、限额、剧情库、数据库。
+没有搬过来的：对话模型、通话、好感度、记忆、成就、限额、剧情库、数据库、登录。
+**剧情数据、角色音色模型、立绘素材一概没有**——上游明确要求这些东西不进公开仓库
+（[ADR-0003](https://github.com/Sallyn0225/eidolon-sc/blob/main/docs/adr/0003-corpus-and-voices-stay-private.md)），
+这里同样没有。`characters.json` 是从上游的 `characters/characters.toml` 转出来的，
+头像复制自上游仓库的 `characters/avatars/`。
 
 ## 常见问题
 
@@ -128,14 +139,40 @@ docs/                README 里那两张截图
 **会不会偷偷录音上传？** 录音只在你按着/聆听时存在内存里，转成文字后立刻丢弃；
 合成出来的音频缓存在 `.cache/tts`，其余什么都不留。
 
-## 版权
+## 许可
 
-代码以 MIT 协议开源（见 `LICENSE`）。
+本项目以 **[GNU AGPL-3.0-or-later](LICENSE)** 发布，与上游 Eidolon-SC 保持一致。
+你修改它、再通过网络提供给别人用，就要向这些用户公开改后的源码（AGPL 第 13 条）。
+
+上游同样以 AGPL-3.0-or-later 发布，所以这里必须一致，也乐意一致——
+它是从人家的作品里长出来的，没有理由反过来把门关上。
+
+**这份代码相对上游改了什么**（AGPL 第 5 条要求显著声明改动，日期为 2026-10-25）：
+
+- 只保留复读：去掉对话模型、通话、好感度、记忆、成就、限额、剧情库、数据库、登录体系。
+- 后端整段重写：FastAPI / Pipecat / Docker 换成 Python 标准库的 `server.py`（零依赖，一个文件）。
+- 前端整段重写：Next.js / React 换成原生 HTML + CSS + JS，没有构建步骤。
+- 数据从 TOML 转成 `characters.json`（只留 id / 名字 / 分组 / 印象色 / 音色 ID / 头像）。
+- 删掉了剧情库、音色模型、立绘、背景图；Python / JS 源码是重写的，与上游逐字重合的只有
+  `import`、`send_response` 这类通用语句（逐行比对过：`server.py` 246 行长行里 9 行，
+  `app.js` 576 行里 22 行，全是样板代码）。
+
+## 致谢
+
+- **[Sallyn0225/eidolon-sc](https://github.com/Sallyn0225/eidolon-sc)** — 本项目的来源。复读这条链路、
+  29 位角色的配置结构、`voice_id` 与头像都出自这里；它本身又在架构上参考了
+  [LAPLACE Eidolon](https://laplace.live/eidolon)。
+- **[Fish Audio](https://fish.audio)** — 语音合成。
+- **[阿里云百炼](https://www.aliyun.com/product/bailian)** — Qwen3-ASR 语音识别。
+
+## 版权与免责
 
 `public/avatars/` 的头像、角色名与所属组合，版权归 **バンダイナムコエンターテインメント /
 Bandai Namco Entertainment** 与《アイドルマスター シャイニーカラーズ》各权利人所有，
-这里只是把游戏里的角色形象用于个人向的粉丝工具，**不随代码一起授权**，也不可用于商业用途。
-如果权利人要求，我会移除这些素材或整个仓库。
+这部分**不在 AGPL 的授权范围内**，随上游一并理解为非官方粉丝作品的使用，
+不用于商业用途；权利人要求时会移除素材或整个仓库。
 
-语音合成由 [Fish Audio](https://fish.audio) 提供，识别由阿里云百炼 Qwen3-ASR 或浏览器自带识别提供，
-两者的账号与用量都算你自己的。
+本项目是非官方粉丝作品，与万代南梦宫及《偶像大师》系列版权方无关，角色形象由原作的语音合成音色呈现。
+
+语音合成与语音识别的账号、用量和条款，按各家服务提供方的规定，算你自己的。
+

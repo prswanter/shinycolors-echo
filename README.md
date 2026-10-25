@@ -9,6 +9,10 @@
 ストレイライト、ノクチル、シーズ、コメティック 的 28 位小偶像，加上事务员七草叶月，共 29 位，
 每个人一把自己的嗓子。
 
+![选人页](docs/screenshot-home.png)
+
+![复读页](docs/screenshot-echo.png)
+
 ---
 
 ## 跑起来
@@ -71,13 +75,13 @@ public/
   app.js             录音、断句、听写、播放（没有对话逻辑）
   avatars/           29 张头像
 config.example.json  密钥模板，复制成 config.json 也行
+docs/                README 里那两张截图
 .cache/tts/          合成过的音频（按内容缓存，同一句不再花钱），可随时删
 ```
 
 ## 和 eidolon-sc 的关系
 
-复读这条链路（`EchoComposer` + `engine.echo` + 本地 STT/TTS）是从
-`E:/work buddy/shinycolors/eidolon-sc-main` 里抽出来的，只留下：
+复读这条链路（`EchoComposer` + `engine.echo` + 本地 STT/TTS）是从 `eidolon-sc` 里抽出来的，只留下：
 
 - 你说一句 → 听成文字（百炼 Qwen3-ASR / 浏览器识别）
 - 同一句文字 → 用这位角色的 Fish Audio 音色念出来（`characters.toml` 里的 `voice_id`）
@@ -121,3 +125,15 @@ config.example.json  密钥模板，复制成 config.json 也行
 
 **会不会偷偷录音上传？** 录音只在你按着/聆听时存在内存里，转成文字后立刻丢弃；
 合成出来的音频缓存在 `.cache/tts`，其余什么都不留。
+
+## 版权
+
+代码以 MIT 协议开源（见 `LICENSE`）。
+
+`public/avatars/` 的头像、角色名与所属组合，版权归 **バンダイナムコエンターテインメント /
+Bandai Namco Entertainment** 与《アイドルマスター シャイニーカラーズ》各权利人所有，
+这里只是把游戏里的角色形象用于个人向的粉丝工具，**不随代码一起授权**，也不可用于商业用途。
+如果权利人要求，我会移除这些素材或整个仓库。
+
+语音合成由 [Fish Audio](https://fish.audio) 提供，识别由阿里云百炼 Qwen3-ASR 或浏览器自带识别提供，
+两者的账号与用量都算你自己的。

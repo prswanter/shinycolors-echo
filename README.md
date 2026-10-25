@@ -47,7 +47,8 @@ python server.py --open
 `FISH_AUDIO_API_KEY` / `DASHSCOPE_API_KEY`。
 
 **不填百炼也能用**：把「听写方式」换成 *浏览器自带*，用 Chrome / Edge 自己的语音识别，
-只需要一把 Fish Audio 密钥。它靠微软/谷歌的服务器，网络不通时会提示你换回来。
+只需要一把 Fish Audio 密钥。它靠微软/谷歌的服务器，网络不通时会一直重试、不会自己停；
+实在一直连不上，换回百炼就好。
 
 ## 两个模式
 

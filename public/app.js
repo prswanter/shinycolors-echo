@@ -953,13 +953,25 @@
     };
     rec.onend = () => {
       if (!liveStopping && state.listening) {
-        try { rec.start(); } catch { /* noop */ }
+        // 网络断的时候 Chrome 会立刻 end，马上重启会烧成死循环，垫一点延迟。
+        setTimeout(() => {
+          if (!liveStopping && state.listening && liveRec === rec) {
+            try { rec.start(); } catch { /* noop */ }
+          }
+        }, 500);
       }
     };
+    let lastNetToast = 0;
     rec.onerror = (event) => {
       if (event.error === 'network') {
-        toast('浏览器语音识别连不上服务器：换用百炼识别吧', true);
-        stopListening();
+        // 不停：onend 会自动重开麦克风接着试。提示限流，别一次断线刷一屏。
+        const now = Date.now();
+        if (now - lastNetToast > 15000) {
+          lastNetToast = now;
+          toast('浏览器语音识别连不上服务器，会一直重试；一直不行就换百炼识别', true);
+        } else {
+          $('status').textContent = '识别服务连不上，重试中…';
+        }
       }
     };
     state.listening = true;

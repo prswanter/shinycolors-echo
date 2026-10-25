@@ -623,6 +623,32 @@ button {
   50%      { box-shadow: 0 4px 22px color-mix(in srgb, var(--c) 62%, transparent); }
 }
 
+.type-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(560px, 100%);
+}
+.type-row input {
+  flex: 1;
+  min-width: 0;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel) 78%, transparent);
+  color: var(--ink);
+  font-size: 13.5px;
+  outline: none;
+  transition: border-color .18s, box-shadow .18s, background .18s;
+}
+.type-row input::placeholder { color: #a99fb4; }
+.type-row input:focus {
+  border-color: color-mix(in srgb, var(--c) 55%, var(--line));
+  background: var(--panel);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 12%, transparent);
+}
+
 .under {
   display: flex;
   align-items: center;
@@ -784,6 +810,7 @@ body.sheet-open .toast { bottom: auto; top: 16px; }
   .portrait { width: 112px; height: 112px; }
   .portrait img { width: 92px; height: 92px; }
   .talk { height: 58px; font-size: 15px; }
+  .type-row input { font-size: 16px; }  /* iOS 聚焦小于 16px 会自动放大页面 */
   .home-foot { flex-wrap: wrap; }
   .log { padding-left: 14px; padding-right: 14px; }
   .bubble { font-size: 14px; }

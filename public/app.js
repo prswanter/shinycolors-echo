@@ -1060,6 +1060,16 @@
       button.setAttribute('aria-checked', String(button.dataset.mode === state.mode));
     }
 
+    // 打字让她复读：两种模式都行，实时开着也照常，跟说话互不打断
+    $('type-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = $('type-text');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      void echoOnce(text);
+    });
+
     $('btn-clear').addEventListener('click', () => {
       $('log').innerHTML = `
         <div class="empty" id="log-empty">

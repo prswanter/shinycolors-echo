@@ -95,6 +95,14 @@
       <span id="talk-label">按住说话</span>
     </button>
 
+    <form class="type-row" id="type-form" autocomplete="off">
+      <input id="type-text" type="text" enterkeyhint="send" autocomplete="off" spellcheck="false"
+             placeholder="或者打一句给她，回车就复读" aria-label="输入要复读的文字" />
+      <button class="ghost-btn square" type="submit" title="让她复读这句" aria-label="让她复读这句">
+        <svg class="icon"><use href="#i-repeat"/></svg>
+      </button>
+    </form>
+
     <div class="under">
       <p class="hint" id="hint">也可以按住 <kbd>空格</kbd></p>
       <button class="ghost-btn small" id="btn-clear" type="button">

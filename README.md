@@ -18,6 +18,8 @@
 ## 跑起来
 
 ```bash
+git clone git@github.com:prswanter/shinycolors-echo.git
+cd shinycolors-echo
 python server.py --open
 ```
 

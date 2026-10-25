@@ -1,0 +1,6 @@
+{
+  "fish_api_key": "",
+  "fish_model": "s2.1-pro-free",
+  "dashscope_api_key": "",
+  "asr_model": "qwen3-asr-flash"
+}

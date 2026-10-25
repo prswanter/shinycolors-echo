@@ -1,0 +1,305 @@
+{
+  "units": [
+    "illumination STARS",
+    "L'Antica",
+    "放課後クライマックスガールズ",
+    "アルストロメリア",
+    "ストレイライト",
+    "ノクチル",
+    "シーズ",
+    "コメティック",
+    "事務員"
+  ],
+  "characters": [
+    {
+      "id": "mano",
+      "name": "櫻木真乃",
+      "zh": "樱木真乃",
+      "romaji": "Sakuragi Mano",
+      "unit": "illumination STARS",
+      "color": "#ffbad6",
+      "voice_id": "a1150f3d14ac46fb8ea59c7803cd8357",
+      "avatar": "avatars/mano.jpg"
+    },
+    {
+      "id": "hiori",
+      "name": "風野灯織",
+      "zh": "风野灯织",
+      "romaji": "Kazano Hiori",
+      "unit": "illumination STARS",
+      "color": "#144384",
+      "voice_id": "df43849d16ae48fe87f5670b6a2b81b3",
+      "avatar": "avatars/hiori.jpg"
+    },
+    {
+      "id": "meguru",
+      "name": "八宮めぐる",
+      "zh": "八宫巡",
+      "romaji": "Hachimiya Meguru",
+      "unit": "illumination STARS",
+      "color": "#ffe012",
+      "voice_id": "17ce7b6d4ccb43a2bedac1fdb4a219cb",
+      "avatar": "avatars/meguru.jpg"
+    },
+    {
+      "id": "kogane",
+      "name": "月岡恋鐘",
+      "zh": "月冈恋钟",
+      "romaji": "Tsukioka Kogane",
+      "unit": "L'Antica",
+      "color": "#f84cad",
+      "voice_id": "a11bfd046e924099a84f989fb4049e95",
+      "avatar": "avatars/kogane.jpg"
+    },
+    {
+      "id": "mamimi",
+      "name": "田中摩美々",
+      "zh": "田中摩美美",
+      "romaji": "Tanaka Mamimi",
+      "unit": "L'Antica",
+      "color": "#a846fb",
+      "voice_id": "1cbb1ba24d094810a6cada880dd8dec0",
+      "avatar": "avatars/mamimi.jpg"
+    },
+    {
+      "id": "sakuya",
+      "name": "白瀬咲耶",
+      "zh": "白濑咲耶",
+      "romaji": "Shirase Sakuya",
+      "unit": "L'Antica",
+      "color": "#006047",
+      "voice_id": "3543f8d3e498439794f14be23dafbe89",
+      "avatar": "avatars/sakuya.jpg"
+    },
+    {
+      "id": "yuika",
+      "name": "三峰結華",
+      "zh": "三峰结华",
+      "romaji": "Mitsumine Yuika",
+      "unit": "L'Antica",
+      "color": "#3b91c4",
+      "voice_id": "e6b09fdf01874e63adf5f8aa45c0d2ea",
+      "avatar": "avatars/yuika.jpg"
+    },
+    {
+      "id": "kiriko",
+      "name": "幽谷霧子",
+      "zh": "幽谷雾子",
+      "romaji": "Yukoku Kiriko",
+      "unit": "L'Antica",
+      "color": "#d9f2ff",
+      "voice_id": "115e921e1b4740b08f3ec723666b2b40",
+      "avatar": "avatars/kiriko.jpg"
+    },
+    {
+      "id": "toru",
+      "name": "浅倉透",
+      "zh": "浅仓透",
+      "romaji": "Asakura Toru",
+      "unit": "ノクチル",
+      "color": "#50d0d0",
+      "voice_id": "db8fb218614745f6b854e24620c33445",
+      "avatar": "avatars/toru.jpg"
+    },
+    {
+      "id": "madoka",
+      "name": "樋口円香",
+      "zh": "樋口圆香",
+      "romaji": "Higuchi Madoka",
+      "unit": "ノクチル",
+      "color": "#be1e3e",
+      "voice_id": "9fa98a656a0d4242b6073fd955f5179b",
+      "avatar": "avatars/madoka.jpg"
+    },
+    {
+      "id": "koito",
+      "name": "福丸小糸",
+      "zh": "福丸小糸",
+      "romaji": "Fukumaru Koito",
+      "unit": "ノクチル",
+      "color": "#7967c3",
+      "voice_id": "8ee2e17bbead4610a17f324fe540be49",
+      "avatar": "avatars/koito.jpg"
+    },
+    {
+      "id": "hinana",
+      "name": "市川雛菜",
+      "zh": "市川雏菜",
+      "romaji": "Ichikawa Hinana",
+      "unit": "ノクチル",
+      "color": "#ffc639",
+      "voice_id": "565ffd381fbc427ebfa1cc4c689ac12d",
+      "avatar": "avatars/hinana.jpg"
+    },
+    {
+      "id": "nichika",
+      "name": "七草にちか",
+      "zh": "七草日花",
+      "romaji": "Nanakusa Nichika",
+      "unit": "シーズ",
+      "color": "#a6ceb6",
+      "voice_id": "b3757a5a71ba4078be1e25b446190975",
+      "avatar": "avatars/nichika.jpg"
+    },
+    {
+      "id": "mikoto",
+      "name": "緋田美琴",
+      "zh": "绯田美琴",
+      "romaji": "Aketa Mikoto",
+      "unit": "シーズ",
+      "color": "#760f10",
+      "voice_id": "bf578eec18ca49daaf9216f5df3fabd4",
+      "avatar": "avatars/mikoto.jpg"
+    },
+    {
+      "id": "asahi",
+      "name": "芹沢あさひ",
+      "zh": "芹泽朝日",
+      "romaji": "Serizawa Asahi",
+      "unit": "ストレイライト",
+      "color": "#f30100",
+      "voice_id": "2dcc8351008f4714b33506d7d45a861e",
+      "avatar": "avatars/asahi.jpg"
+    },
+    {
+      "id": "fuyuko",
+      "name": "黛冬優子",
+      "zh": "黛冬优子",
+      "romaji": "Mayuzumi Fuyuko",
+      "unit": "ストレイライト",
+      "color": "#5ce626",
+      "voice_id": "105efba2160a40119d6d21e5445b889e",
+      "avatar": "avatars/fuyuko.jpg"
+    },
+    {
+      "id": "mei",
+      "name": "和泉愛依",
+      "zh": "和泉爱依",
+      "romaji": "Izumi Mei",
+      "unit": "ストレイライト",
+      "color": "#ff00ff",
+      "voice_id": "1f0033aac5b34d478ec975114c845bf9",
+      "avatar": "avatars/mei.jpg"
+    },
+    {
+      "id": "kaho",
+      "name": "小宮果穂",
+      "zh": "小宫果穗",
+      "romaji": "Komiya Kaho",
+      "unit": "放課後クライマックスガールズ",
+      "color": "#e5461c",
+      "voice_id": "d9e61a6914dd47669a9bbae71a78ab38",
+      "avatar": "avatars/kaho.jpg"
+    },
+    {
+      "id": "chiyoko",
+      "name": "園田智代子",
+      "zh": "园田智代子",
+      "romaji": "Sonoda Chiyoko",
+      "unit": "放課後クライマックスガールズ",
+      "color": "#f93b90",
+      "voice_id": "a48ea1f5d81a478ba528b49188bf4ccc",
+      "avatar": "avatars/chiyoko.jpg"
+    },
+    {
+      "id": "juri",
+      "name": "西城樹里",
+      "zh": "西城树里",
+      "romaji": "Saijo Juri",
+      "unit": "放課後クライマックスガールズ",
+      "color": "#ffc602",
+      "voice_id": "8875da3542374b18a29b85fbf48f0de2",
+      "avatar": "avatars/juri.jpg"
+    },
+    {
+      "id": "rinze",
+      "name": "杜野凛世",
+      "zh": "杜野凛世",
+      "romaji": "Morino Rinze",
+      "unit": "放課後クライマックスガールズ",
+      "color": "#89c3eb",
+      "voice_id": "dd73b57d509b436b90ef9263d2e6c5d1",
+      "avatar": "avatars/rinze.jpg"
+    },
+    {
+      "id": "natsuha",
+      "name": "有栖川夏葉",
+      "zh": "有栖川夏叶",
+      "romaji": "Arisugawa Natsuha",
+      "unit": "放課後クライマックスガールズ",
+      "color": "#90e667",
+      "voice_id": "70e8160d2cf34c5892b9002e42cbafdb",
+      "avatar": "avatars/natsuha.jpg"
+    },
+    {
+      "id": "amana",
+      "name": "大崎甘奈",
+      "zh": "大崎甘奈",
+      "romaji": "Osaki Amana",
+      "unit": "アルストロメリア",
+      "color": "#f54275",
+      "voice_id": "d5a68fc022604b23b94e2a0b9f823b59",
+      "avatar": "avatars/amana.jpg"
+    },
+    {
+      "id": "tenka",
+      "name": "大崎甜花",
+      "zh": "大崎甜花",
+      "romaji": "Osaki Tenka",
+      "unit": "アルストロメリア",
+      "color": "#e75bec",
+      "voice_id": "7f50c8ef897c402fa7967a11aa94261e",
+      "avatar": "avatars/tenka.jpg"
+    },
+    {
+      "id": "chiyuki",
+      "name": "桑山千雪",
+      "zh": "桑山千雪",
+      "romaji": "Kuwayama Chiyuki",
+      "unit": "アルストロメリア",
+      "color": "#fbfafa",
+      "voice_id": "7de8d70dc5e04759be11c01f69c8c863",
+      "avatar": "avatars/chiyuki.jpg"
+    },
+    {
+      "id": "luca",
+      "name": "斑鳩ルカ",
+      "zh": "斑鸠路加",
+      "romaji": "Ikaruga Luca",
+      "unit": "コメティック",
+      "color": "#24130d",
+      "voice_id": "79e3dd87aa7649dab07350896ce995ae",
+      "avatar": "avatars/luca.jpg"
+    },
+    {
+      "id": "hana",
+      "name": "鈴木羽那",
+      "zh": "铃木羽那",
+      "romaji": "Suzuki Hana",
+      "unit": "コメティック",
+      "color": "#e0b5d3",
+      "voice_id": "ccfce7160c664853813988cea175d1ab",
+      "avatar": "avatars/hana.jpg"
+    },
+    {
+      "id": "haruki",
+      "name": "郁田はるき",
+      "zh": "郁田阳希",
+      "romaji": "Ikuta Haruki",
+      "unit": "コメティック",
+      "color": "#ead7a4",
+      "voice_id": "5dd68541a9a04f50b9332572e0d266ff",
+      "avatar": "avatars/haruki.jpg"
+    },
+    {
+      "id": "hazuki",
+      "name": "七草はづき",
+      "zh": "七草叶月",
+      "romaji": "Nanakusa Hazuki",
+      "unit": "事務員",
+      "color": "#c3d825",
+      "voice_id": "a061289170654e1a9dda177a28764651",
+      "avatar": "avatars/hazuki.jpg"
+    }
+  ]
+}

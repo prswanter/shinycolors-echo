@@ -1,0 +1,15 @@
+# 密钥：只留 config.example.json
+config.json
+
+# 合成过的音频缓存
+.cache/
+
+# 临时
+*.log
+__pycache__/
+.shots/
+
+# 编辑器 / 内部工作目录
+.vscode/
+.idea/
+.workbuddy/

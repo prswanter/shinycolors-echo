@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>闪耀色彩复读机</title>
+<meta name="description" content="29 位闪耀色彩角色，只做一件事：把你说的话，用她的声音原样说回来。" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔁</text></svg>" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true">
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 100-6.4 3.2 3.2 0 000 6.4z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M19.4 13.5l1.4 1.1-1.6 2.8-1.7-.6a7.4 7.4 0 01-1.8 1l-.3 1.8h-3.2l-.3-1.8a7.4 7.4 0 01-1.8-1l-1.7.6-1.6-2.8 1.4-1.1a7.6 7.6 0 010-2.1L5.8 10.3 7.4 7.5l1.7.6a7.4 7.4 0 011.8-1l.3-1.8h3.2l.3 1.8a7.4 7.4 0 011.8 1l1.7-.6 1.6 2.8-1.4 1.1a7.6 7.6 0 010 2.1z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 11.5a6.5 6.5 0 0013 0M12 18v3M9 21h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5l10 6.5-10 6.5z" fill="currentColor"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M4 10V8.5A2.5 2.5 0 016.5 6H18M18 6l-3-3M18 6l-3 3M20 14v1.5a2.5 2.5 0 01-2.5 2.5H6M6 18l3 3M6 18l3-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 11-2.6-5.9M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+
+<div class="bloom" id="bloom" aria-hidden="true"></div>
+
+<!-- ───────────────────────────── 选人 ───────────────────────────── -->
+<main class="view" id="view-home">
+  <header class="home-head">
+    <div class="brand">
+      <p class="eyebrow"><span class="dot"></span>SHINY COLORS · ECHO</p>
+      <h1>闪耀色彩复读机</h1>
+      <p class="lede">29 种复读模式。你说话，她用她的声音原样说回来——<br class="br-wide" />不聊天，不记事，不打电话。</p>
+    </div>
+    <button class="ghost-btn" id="btn-settings" data-open-settings>
+      <svg class="icon"><use href="#i-gear"/></svg><span>设置</span>
+    </button>
+  </header>
+
+  <div class="search-row">
+    <input id="search" type="search" autocomplete="off" spellcheck="false" placeholder="找她：真乃、はづき、Sakuragi、hazuki…" aria-label="搜索角色" />
+    <div class="roster-count" id="roster-count"></div>
+  </div>
+
+  <div class="roster" id="roster"></div>
+
+  <footer class="home-foot">
+    <span>语音合成 Fish Audio</span><i></i><span>语音识别 百炼 / 浏览器</span><i></i><span>本地运行 · 不留记录</span>
+  </footer>
+</main>
+
+<!-- ───────────────────────────── 复读 ───────────────────────────── -->
+<main class="view echo" id="view-echo" hidden>
+  <header class="echo-head">
+    <button class="ghost-btn square" id="btn-back" aria-label="返回">
+      <svg class="icon"><use href="#i-back"/></svg>
+    </button>
+    <div class="echo-id">
+      <img id="echo-avatar" alt="" width="40" height="40" />
+      <div>
+        <h2 id="echo-name">—</h2>
+        <p id="echo-unit">—</p>
+      </div>
+    </div>
+    <button class="ghost-btn square" data-open-settings aria-label="设置">
+      <svg class="icon"><use href="#i-gear"/></svg>
+    </button>
+  </header>
+
+  <div class="stage">
+    <div class="portrait" id="portrait">
+      <div class="ring"></div>
+      <div class="rings"></div>
+      <img id="portrait-img" alt="" />
+    </div>
+    <p class="status" id="status">按住空格，或者按住下面的按钮</p>
+    <div class="meter" id="meter" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+  </div>
+
+  <div class="log" id="log">
+    <div class="empty" id="log-empty">
+      <p class="empty-title">这里只放复读</p>
+      <p>你说一句，她原样说回来。<br />说错了、说脏话、说外语，她都照说不误——她只是在复读。</p>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="mode-toggle" role="radiogroup" aria-label="复读方式">
+      <button type="button" role="radio" data-mode="push" aria-checked="true">按住复读</button>
+      <button type="button" role="radio" data-mode="live" aria-checked="false">实时复读</button>
+    </div>
+
+    <button class="talk" id="btn-talk" type="button">
+      <svg class="icon"><use href="#i-mic"/></svg>
+      <span id="talk-label">按住说话</span>
+    </button>
+
+    <div class="under">
+      <p class="hint" id="hint">也可以按住 <kbd>空格</kbd></p>
+      <button class="ghost-btn small" id="btn-clear" type="button">
+        <svg class="icon"><use href="#i-trash"/></svg><span>清空</span>
+      </button>
+    </div>
+  </div>
+</main>
+
+<!-- ───────────────────────────── 设置 ───────────────────────────── -->
+<div class="scrim" id="scrim" hidden>
+  <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <header class="sheet-head">
+      <h3 id="settings-title">设置</h3>
+      <button class="ghost-btn square" id="btn-close-settings" aria-label="关闭">
+        <svg class="icon"><use href="#i-close"/></svg>
+      </button>
+    </header>
+
+    <div class="sheet-body">
+      <div class="field">
+        <label for="fish-key">Fish Audio 密钥</label>
+        <input id="fish-key" type="password" autocomplete="off" spellcheck="false" placeholder="用来合成她的声音" />
+        <p class="tip" id="fish-tip">在 fish.audio 的 API 页面拿。只存在本机的 config.json 里。</p>
+      </div>
+      <div class="field">
+        <label for="fish-model">合成模型</label>
+        <select id="fish-model"></select>
+        <p class="tip">默认 s2.1-pro-free，免费额度够复读玩了。</p>
+      </div>
+
+      <div class="field">
+        <label for="dash-key">阿里云百炼密钥</label>
+        <input id="dash-key" type="password" autocomplete="off" spellcheck="false" placeholder="用来听清你说的话（可选）" />
+        <p class="tip" id="dash-tip">在阿里云百炼控制台拿，开通 Qwen3-ASR 即可。不想填就用下面的浏览器识别。</p>
+      </div>
+
+      <div class="field">
+        <label for="stt-mode">听写方式</label>
+        <select id="stt-mode">
+          <option value="server">阿里云百炼（更准）</option>
+          <option value="browser">浏览器自带（不用额外密钥）</option>
+        </select>
+        <p class="tip" id="stt-tip">浏览器识别用的是 Chrome / Edge 的语音识别，需要能连上它的服务器。</p>
+      </div>
+
+      <div class="field">
+        <label for="in-device">麦克风</label>
+        <div class="device-row">
+          <select id="in-device"><option value="">系统默认</option></select>
+          <button class="ghost-btn square" id="btn-refresh-devices" type="button" title="刷新设备列表" aria-label="刷新设备列表">
+            <svg class="icon"><use href="#i-refresh"/></svg>
+          </button>
+        </div>
+        <p class="tip" id="in-tip">用哪只麦克风听你说话。改完立即生效。</p>
+      </div>
+
+      <div class="field">
+        <label for="sensitivity">麦克风灵敏度 <span class="val" id="sens-value">5</span></label>
+        <input id="sensitivity" type="range" min="1" max="10" step="1" value="5" />
+        <p class="tip">实时复读时判断你有没有在说话。环境吵就调低，说话小声就调高。</p>
+      </div>
+
+      <div class="field">
+        <label for="out-device">扬声器</label>
+        <select id="out-device"><option value="">系统默认</option></select>
+        <p class="tip" id="out-tip">她的声音从哪个设备出来。</p>
+      </div>
+    </div>
+
+    <div class="sheet-actions">
+      <button class="primary-btn" id="btn-save">保存</button>
+      <button class="ghost-btn" id="btn-test" type="button">试听一句</button>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

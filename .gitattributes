@@ -1,0 +1,5 @@
+# 统一换行，免得 Windows / macOS 之间 diff 全是空白差异
+* text=auto eol=lf
+*.bat text eol=crlf
+*.jpg binary
+*.png binary

@@ -165,6 +165,9 @@ docs/                README 里那两张截图
   [LAPLACE Eidolon](https://laplace.live/eidolon)。
 - **[Fish Audio](https://fish.audio)** — 语音合成。
 - **[阿里云百炼](https://www.aliyun.com/product/bailian)** — Qwen3-ASR 语音识别。
+- **AI 编程助手（DeepSeek）** — 本项目的大部分代码是在 AI 辅助下编写与重构的，
+  所有改动均经人工审阅、实机测试后才提交。AI 生成内容不作为著作权主体，
+  因此不计入 Contributors。
 
 ## 版权与免责
 

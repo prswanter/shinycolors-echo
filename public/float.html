@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>复读 · 浮窗</title>
+  <link rel="stylesheet" href="float.css" />
+</head>
+<body>
+  <!-- 没有标题栏，靠这一条拖动窗口（Web 里画不了窗口，只有这一片是「把手」） -->
+  <div class="grip pywebview-drag-region" title="按住这里拖动"><span></span></div>
+
+  <div class="row">
+    <span class="ava" id="ava" title="点这里换人">
+      <select id="pick" class="pick" aria-label="换一位角色"></select>
+    </span>
+
+    <form class="field" id="form" autocomplete="off">
+      <input id="text" class="input" type="text" enterkeyhint="send" autocomplete="off" spellcheck="false"
+             placeholder="打一句，回车就复读" aria-label="要复读的文字" />
+      <button class="send" id="send" type="submit" title="复读这句" aria-label="复读这句">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 10V8.5A2.5 2.5 0 016.5 6H18M18 6l-3-3M18 6l-3 3M20 14v1.5a2.5 2.5 0 01-2.5 2.5H6M6 18l3 3M6 18l3-3"/>
+        </svg>
+      </button>
+    </form>
+
+    <button class="x" id="x" type="button" title="关掉" aria-label="关掉浮窗">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+
+  <script src="float.js"></script>
+</body>
+</html>

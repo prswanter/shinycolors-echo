@@ -21,8 +21,11 @@
     mode: localStorage.getItem('echo.mode') === 'live' ? 'live' : 'push',
     sttChoice: localStorage.getItem('echo.stt') || '',
     sensitivity: clamp(Number(localStorage.getItem('echo.sens')) || 5, 1, 10),
+    floatAlpha: clamp(Number(localStorage.getItem('echo.fwalpha') ?? 12), 0, 70),  // 浮窗透明度，越大越透
+    hotkey: localStorage.getItem('echo.fwhotkey') || 'alt+w',   // 浮窗叫回光标的系统级快捷键
     inputDevice: localStorage.getItem('echo.in') || '',    // '' = 系统默认
     outputDevice: localStorage.getItem('echo.out') || '',  // '' = 系统默认
+    outLabel: localStorage.getItem('echo.outlabel') || '', // 播放设备名：浮窗按名字认设备
     config: null,
     phase: 'idle',          // idle | recording | hearing | speaking
     busy: false,            // 一次复读没走完之前不接受新的
@@ -219,6 +222,7 @@
       </div>`;
     renderStatus();
     document.title = `${character.zh} · 闪耀色彩复读机`;
+    floatWin.syncIdentity();
     if (!fromHash) {
       history.replaceState(null, '', `#/${character.id}`);
     }
@@ -531,6 +535,39 @@
     };
   }
 
+  /** 最近一次枚举到的输出设备：换设备时要拿它的名字给浮窗认。 */
+  let audioOutputs = [];
+
+  function labelOfOutput(id) {
+    if (!id) return '';
+    const hit = audioOutputs.find((d) => d.deviceId === id);
+    if (hit && hit.label) return hit.label;
+    // 刚插拔过设备时名单可能对不上，用下拉里已经渲染出来的文字兜底
+    const opt = $('out-device')?.selectedOptions?.[0];
+    if (opt && opt.value === id && opt.textContent && opt.textContent !== '系统默认') {
+      return opt.textContent;
+    }
+    return state.outLabel || '';
+  }
+
+  function rememberOutputLabel(label) {
+    state.outLabel = label || '';
+    try {
+      if (state.outLabel) localStorage.setItem('echo.outlabel', state.outLabel);
+      else localStorage.removeItem('echo.outlabel');
+    } catch { /* 隐私模式 */ }
+  }
+
+  /** 把「用哪只音箱」推给服务端，浮窗那边每 1.5 秒读一次。
+   *  光记在 localStorage 里没用——浮窗是另一个 profile，看不到这里的存储。 */
+  function pushFloatAudio() {
+    void fetch('/api/float/state', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ out_id: state.outputDevice, out_label: state.outLabel }),
+    }).catch(() => {});
+  }
+
   /** 填一个下拉：第一项是系统默认，后面按浏览器给的顺序排。 */
   function fillDeviceSelect(select, devices, saved, prefix) {
     select.innerHTML = '';
@@ -558,6 +595,7 @@
     } else {
       state.outputDevice = '';
       localStorage.removeItem('echo.out');
+      rememberOutputLabel('');
     }
   }
 
@@ -577,6 +615,7 @@
    */
   async function refreshDeviceSelects() {
     const [{ inputs, outputs }, perm] = await Promise.all([listAudioDevices(), micPermission()]);
+    audioOutputs = outputs;
 
     if (!fillDeviceSelect($('in-device'), inputs, state.inputDevice, '麦克风')) {
       forgetDevice('in');
@@ -592,6 +631,14 @@
       if (!fillDeviceSelect($('out-device'), outputs, state.outputDevice, '扬声器')) {
         forgetDevice('out');
       }
+      // 记住设备名：浮窗那边 id 对不上，只能按名字找同一只扬声器。
+      // 而且名字得推给服务端——只在本地记，浮窗（另一个 profile）读不到。
+      if (state.outputDevice) {
+        const label = labelOfOutput(state.outputDevice);
+        if (label) rememberOutputLabel(label);
+      }
+      pushFloatAudio();
+      setTimeout(() => { void floatWin.showSink(); }, 0);
       $('out-tip').textContent = outputs.length
         ? '她的声音从哪个设备出来。改完立即生效。'
         : '设备名要等浏览器给过麦克风权限才显示，先点右边刷新。';
@@ -1003,6 +1050,135 @@
     }
   }
 
+  /* ───────────────────────── 浮窗输入 ───────────────────────── */
+
+  /**
+   * 浮窗输入：玩游戏时不想切屏，就在一个置顶的小窗里打一句、回车，她照常念。
+   *
+   * 这种窗口浏览器开不出来——Document PiP 能置顶，但标题栏是浏览器强制的防伪标识，
+   * 删不掉；所以换成「本地窗口装网页」：点一下按钮，服务端拉起 float_win.py，
+   * 一个没有标题栏的 WebView2 窗口把 public/float.html 装进去。
+   * 声音由浮窗自己放（它自己调 /api/tts），这里只负责把它叫出来。
+   */
+
+  /** 设置里那个 0–70 的「透明度」换成窗口 alpha：0% → 1.0，70% → 0.3。 */
+  function alphaValue() {
+    return 1 - clamp(state.floatAlpha, 0, 70) / 100;
+  }
+
+  /* 快捷键：只认「修饰键 + 一个字母/数字」或单独的 F1–F24。
+   * 别的键（标点、方向键）注册成系统级热键容易跟人抢，索性不收。 */
+  const HOTKEY_MODS = [['ctrlKey', 'ctrl'], ['altKey', 'alt'], ['shiftKey', 'shift'], ['metaKey', 'win']];
+  const HOTKEY_ALONE = new Set(['Control', 'Alt', 'Shift', 'Meta']);
+
+  function hotkeyKey(e) {
+    const k = e.key;
+    if (HOTKEY_ALONE.has(k)) return '';             // 只按了修饰键，还在等主键
+    if (k === ' ') return 'space';
+    if (/^F([1-9]|1\d|2[0-4])$/.test(k)) return k.toLowerCase();
+    if (k.length === 1 && /[a-z0-9]/i.test(k)) return k.toLowerCase();
+    return '';
+  }
+
+  function hotkeyFrom(e) {
+    const key = hotkeyKey(e);
+    if (!key) return '';
+    const mods = HOTKEY_MODS.filter(([flag]) => e[flag]).map(([, name]) => name);
+    return [...mods, key].join('+');
+  }
+
+  function hotkeyLabel(spec) {
+    const pretty = { ctrl: 'Ctrl', alt: 'Alt', shift: 'Shift', win: 'Win', space: '空格' };
+    return String(spec || '')
+      .split('+')
+      .map((part) => pretty[part] || part.toUpperCase())
+      .join(' + ');
+  }
+
+  function hotkeyUsable(spec) {
+    const parts = String(spec || '').split('+');
+    const key = parts[parts.length - 1] || '';
+    return parts.length > 1 || /^f([1-9]|1\d|2[0-4])$/.test(key);
+  }
+
+  function renderHotkey() {
+    const box = $('fw-hotkey');
+    if (box) box.value = hotkeyLabel(state.hotkey);
+  }
+
+  function applyHotkey(spec) {
+    state.hotkey = spec;
+    try { localStorage.setItem('echo.fwhotkey', spec); } catch { /* 隐私模式 */ }
+    renderHotkey();
+    floatWin.syncHotkey();
+  }
+
+  // 存下来的东西可能是旧版本写的、也可能被手改过，认不出来就回默认
+  if (!hotkeyUsable(state.hotkey)) state.hotkey = 'alt+w';
+
+  const floatWin = {
+    async open() {
+      if (!state.character) { toast('先挑一位小偶像', true); return; }
+      try {
+        const res = await fetch('/api/float', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            character: state.character.id,
+            alpha: alphaValue(),
+            hotkey: state.hotkey,
+            out_id: state.outputDevice,
+            out_label: state.outLabel,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) { toast(data.error || '浮窗没开起来', true); return; }
+        toast(data.already
+          ? `浮窗已经开着了，按 ${hotkeyLabel(state.hotkey)} 把光标叫回来`
+          : `浮窗开好了：打字回车就复读，按 ${hotkeyLabel(state.hotkey)} 回到输入框，抓顶上小横条可以拖`);
+      } catch {
+        toast('连不上本地服务，浮窗开不了', true);
+      }
+    },
+
+    /** 换人 / 拖透明度时把状态递过去，浮窗自己会来读。 */
+    syncIdentity() {
+      if (!state.character) return;
+      void fetch('/api/float/state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ character: state.character.id, alpha: alphaValue(), hotkey: state.hotkey }),
+      }).catch(() => {});
+    },
+
+    applyAlpha() { this.syncIdentity(); },
+
+    /** 改了快捷键：浮窗进程每 0.9 秒读一次状态，读到就自己重注册。 */
+    syncHotkey() {
+      void fetch('/api/float/state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hotkey: state.hotkey }),
+      }).catch(() => {});
+    },
+
+    /** 换了播放设备：浮窗按名字找同一只，1.5 秒内跟过去。 */
+    syncAudio() { pushFloatAudio(); },
+
+    /** 浮窗回报它实际从哪只音箱出声，写在下拉下面一行，省得猜。 */
+    async showSink() {
+      const el = $('out-live');
+      if (!el) return;
+      try {
+        const s = await fetch('/api/float/state', { cache: 'no-store' }).then((r) => r.json());
+        const got = s.sink_applied || '';
+        el.textContent = got ? `浮窗实际输出：${got}` : '';
+        el.classList.toggle('warn', !!got && got.includes('没认出'));
+      } catch { el.textContent = ''; }
+    },
+  };
+
+
   /* ───────────────────────── 事件 ───────────────────────── */
 
   function bindEvents() {
@@ -1070,6 +1246,9 @@
       void echoOnce(text);
     });
 
+    // 浮窗输入：一个置顶的小窗口，玩游戏时不切屏也能敲字
+    $('btn-float').addEventListener('click', () => { void floatWin.open(); });
+
     $('btn-clear').addEventListener('click', () => {
       $('log').innerHTML = `
         <div class="empty" id="log-empty">
@@ -1091,6 +1270,33 @@
       state.sensitivity = clamp(Number(e.target.value), 1, 10);
       localStorage.setItem('echo.sens', String(state.sensitivity));
       $('sens-value').textContent = String(state.sensitivity);
+    });
+
+    // 浮窗透明度：拖的时候浮窗开着就直接跟着变，不用等保存
+    $('fw-alpha').addEventListener('input', (e) => {
+      state.floatAlpha = clamp(Number(e.target.value), 0, 70);
+      localStorage.setItem('echo.fwalpha', String(state.floatAlpha));
+      $('fw-alpha-value').textContent = `${state.floatAlpha}%`;
+      floatWin.applyAlpha();
+    });
+
+    // 浮窗快捷键：点进框里就开始录，按下组合键就存（这个框不给人打字，只认按键）
+    const hk = $('fw-hotkey');
+    hk.addEventListener('focus', () => { hk.value = '按组合键…'; });
+    hk.addEventListener('blur', () => { hk.value = hotkeyLabel(state.hotkey); });
+    hk.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') return;                     // Tab 正常跳走，别当组合键吞了
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.key === 'Escape') { hk.blur(); return; }   // Esc = 不改了
+      const spec = hotkeyFrom(e);
+      if (!spec) return;                               // 只按到修饰键，继续等主键
+      if (!hotkeyUsable(spec)) {
+        toast('至少带上一个 Ctrl / Alt / Shift / Win，单个普通键会把它从别的程序手里抢走', true);
+        return;
+      }
+      applyHotkey(spec);
+      hk.blur();
     });
     $('stt-mode').addEventListener('change', (e) => {
       if (e.target.value === 'browser' && !SR) {
@@ -1128,12 +1334,16 @@
       state.outputDevice = e.target.value;
       if (state.outputDevice) localStorage.setItem('echo.out', state.outputDevice);
       else localStorage.removeItem('echo.out');
+      rememberOutputLabel(e.target.value ? (e.target.selectedOptions[0]?.textContent || '') : '');
+      floatWin.syncAudio();          // 浮窗开着就把声音一起挪过去
       if (!canPickOutput) return;
       try {
         await player.audio.setSinkId(state.outputDevice || '');
       } catch {
         forgetDevice('out');
+        rememberOutputLabel('');
         e.target.value = '';
+        floatWin.syncAudio();
         toast('这个设备换不了，先用系统默认', true);
       }
     });
@@ -1193,6 +1403,10 @@
     $('sensitivity').value = String(state.sensitivity);
     $('sens-value').textContent = String(state.sensitivity);
 
+    $('fw-alpha').value = String(state.floatAlpha);
+    $('fw-alpha-value').textContent = `${state.floatAlpha}%`;
+    renderHotkey();
+
     $('scrim').hidden = false;
     document.body.classList.add('sheet-open');
     void refreshDeviceSelects();
@@ -1202,6 +1416,11 @@
     $('scrim').hidden = true;
     document.body.classList.remove('sheet-open');
   }
+
+  // 设置面板开着的时候跟一下浮窗实际从哪只音箱出声（浮窗每 1.5 秒读一次状态，这边慢半拍就够）
+  setInterval(() => {
+    if (!$('scrim').hidden) void floatWin.showSink();
+  }, 2000);
 
   async function saveSettings() {
     const patch = {};

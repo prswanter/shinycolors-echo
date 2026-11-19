@@ -9,7 +9,7 @@
 没有对话模型，没有记忆，没有好感度，也没有数据库：发出去的文字只变成声音，
 不留在任何地方（合成过的音频按内容缓存在 .cache/tts 里，复读同一句不再花钱）。
 
-    python server.py            # 打开 http://127.0.0.1:8765
+    python server.py            # 打开 http://127.0.0.1:8766
     python server.py --open     # 顺手把浏览器打开
     python server.py --port 9000 --host 0.0.0.0
 
@@ -21,13 +21,19 @@ from __future__ import annotations
 
 import argparse
 import base64
+import ctypes
+import errno
 import hashlib
+import importlib.util
 import json
 import os
+import re
+import subprocess
 import sys
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -39,6 +45,21 @@ PUBLIC = ROOT / "public"
 CACHE = ROOT / ".cache" / "tts"
 CONFIG = Path(os.environ.get("ECHO_CONFIG") or (ROOT / "config.json"))
 CHARACTERS = ROOT / "characters.json"
+
+# 浮窗：一个没有标题栏的本地窗口（WebView2 装的 public/float.html）
+FLOAT_SCRIPT = ROOT / "float_win.py"
+FLOAT_PID = ROOT / ".float.pid"
+FLOAT_LOG = ROOT / ".float.log"
+_float_lock = threading.Lock()
+_float_state: dict[str, Any] = {
+    "alpha": 0.88,
+    "character": "",
+    "hotkey": "alt+w",       # 把光标叫回浮窗输入框的系统级快捷键
+    "hotkey_error": "",      # 浮窗进程注册失败时写在这里，页面读得到
+    "out_id": "",            # 网页里选的播放设备（浏览器里的 deviceId）
+    "out_label": "",         # 同一台设备的名字：浮窗那边按名字找，两边的 id 不是一套
+    "sink_applied": "",      # 浮窗回报的实际输出设备（空 = 浮窗没开或还没认出来）
+}
 
 FISH_TTS_URL = "https://api.fish.audio/v1/tts"
 DASHSCOPE_ASR_URL = (
@@ -330,6 +351,156 @@ MIME = {
 }
 
 
+# --- 浮窗进程（一个没有标题栏的置顶小窗口） ---
+
+
+def _pid_alive(pid: int) -> bool:
+    """这个进程号还在不在。
+
+    Windows 上不能用 os.kill(pid, 0) 探活——那个调用在 Windows 上等于
+    TerminateProcess，会把进程直接杀掉。
+    """
+    if pid <= 0:
+        return False
+    if os.name != "nt":
+        try:
+            os.kill(pid, 0)
+            return True
+        except OSError:
+            return False
+    kernel32 = ctypes.windll.kernel32
+    handle = kernel32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+    if not handle:
+        return False
+    try:
+        code = ctypes.c_ulong()
+        if not kernel32.GetExitCodeProcess(handle, ctypes.byref(code)):
+            return False
+        return code.value == 259  # STILL_ACTIVE
+    finally:
+        kernel32.CloseHandle(handle)
+
+
+def _pid_is_python(pid: int) -> bool:
+    """进程号会被系统回收，动手杀之前先确认那确实还是个 python。"""
+    if os.name != "nt":
+        return True
+    kernel32 = ctypes.windll.kernel32
+    handle = kernel32.OpenProcess(0x1000, False, pid)
+    if not handle:
+        return False
+    try:
+        size = ctypes.c_ulong(1024)
+        buf = ctypes.create_unicode_buffer(1024)
+        if not kernel32.QueryFullProcessImageNameW(handle, 0, buf, ctypes.byref(size)):
+            return False
+        return "python" in Path(buf.value).name.lower()
+    finally:
+        kernel32.CloseHandle(handle)
+
+
+def float_pid() -> int:
+    try:
+        return int(FLOAT_PID.read_text(encoding="utf-8").strip() or 0)
+    except (OSError, ValueError):
+        return 0
+
+
+def stop_float() -> bool:
+    pid = float_pid()
+    if not _pid_alive(pid):
+        return False
+    if not _pid_is_python(pid):
+        FLOAT_PID.unlink(missing_ok=True)
+        return False
+    try:
+        if os.name == "nt":
+            subprocess.run(
+                ["taskkill", "/PID", str(pid), "/F"], capture_output=True, timeout=8
+            )
+        else:
+            os.kill(pid, 15)
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return True
+
+
+def clean_hotkey(spec: Any) -> str:
+    """只收 'alt+w' 这种写法：字母数字 / F1–F24 + 加号，别的一律丢掉。"""
+    text = re.sub(r"[^a-z0-9+]", "", str(spec or "").strip().lower())[:40]
+    return text if "+" in text or re.fullmatch(r"f\d{1,2}", text) else ""
+
+
+def open_float(
+    character: str,
+    alpha: float,
+    port: int,
+    hotkey: str = "",
+    out_id: str | None = None,
+    out_label: str | None = None,
+) -> dict[str, Any]:
+    """把浮窗拉起来；已经开着一个就直接说一声，不重复开。"""
+    with _float_lock:
+        _float_state["alpha"] = alpha
+        if character:
+            _float_state["character"] = character
+        if hotkey:
+            _float_state["hotkey"] = hotkey
+        # 播放设备：'' 也是有效值（系统默认），所以这里按「有没有传这个键」来判
+        if out_id is not None:
+            _float_state["out_id"] = str(out_id)[:200]
+        if out_label is not None:
+            _float_state["out_label"] = str(out_label)[:200]
+        if _pid_alive(float_pid()):
+            return {"ok": True, "already": True}
+        if importlib.util.find_spec("webview") is None:
+            raise ValueError("浮窗要一个窗口壳：先运行 python -m pip install pywebview")
+
+        base = f"http://127.0.0.1:{port}"
+        cmd = [
+            sys.executable,
+            str(FLOAT_SCRIPT),
+            "--url", f"{base}/float.html?c={urllib.parse.quote(character or '')}",
+            "--state-url", f"{base}/api/float/state",
+            "--alpha", f"{alpha:.3f}",
+            "--hotkey", _float_state.get("hotkey") or "alt+w",
+            "--pid-file", str(FLOAT_PID),
+        ]
+        flags = 0
+        if os.name == "nt":
+            flags = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
+        try:
+            log_fh = open(FLOAT_LOG, "w", encoding="utf-8")
+        except OSError:
+            log_fh = None
+        try:
+            proc = subprocess.Popen(
+                cmd,
+                cwd=str(ROOT),
+                stdout=log_fh or subprocess.DEVNULL,
+                stderr=subprocess.STDOUT,
+                creationflags=flags,
+            )
+        finally:
+            if log_fh:
+                log_fh.close()
+
+        # 起来那一下最容易出事（没装 WebView2、脚本写错）。等一小会儿，死了就把原因带回去。
+        for _ in range(26):
+            if proc.poll() is not None:
+                break
+            time.sleep(0.1)
+        if proc.poll() is not None:
+            detail = ""
+            try:
+                lines = FLOAT_LOG.read_text(encoding="utf-8", errors="replace").strip().splitlines()
+                detail = lines[-1].strip() if lines else ""
+            except OSError:
+                pass
+            raise ValueError(f"浮窗没起来：{detail or '详见 .float.log'}")
+        return {"ok": True, "pid": proc.pid}
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "ShinyEcho/1.0"
     protocol_version = "HTTP/1.1"
@@ -388,6 +559,8 @@ class Handler(BaseHTTPRequestHandler):
                     },
                 },
             )
+        if path == "/api/float/state":
+            return self._json(200, dict(_float_state))
         return self._static(path)
 
     def do_POST(self) -> None:
@@ -399,6 +572,12 @@ class Handler(BaseHTTPRequestHandler):
                 return self._stt()
             if path == "/api/config":
                 return self._save_config()
+            if path == "/api/float":
+                return self._float_open()
+            if path == "/api/float/state":
+                return self._float_state_save()
+            if path == "/api/float/close":
+                return self._float_close()
         except ValueError as e:
             return self._fail(400, str(e))
         except Upstream as e:
@@ -466,6 +645,60 @@ class Handler(BaseHTTPRequestHandler):
             },
         )
 
+    # --- 浮窗 ---
+
+    def _float_open(self) -> None:
+        payload = json.loads(self._body() or b"{}")
+        character = str(payload.get("character") or "")
+        try:
+            alpha = float(payload.get("alpha") or 0.65)
+        except (TypeError, ValueError):
+            alpha = 0.65
+        port = int(self.server.server_address[1])
+        hotkey = clean_hotkey(payload.get("hotkey"))
+        out_id = payload.get("out_id")
+        out_label = payload.get("out_label")
+        self._json(
+            200,
+            open_float(
+                character,
+                max(0.3, min(1.0, alpha)),
+                port,
+                hotkey,
+                None if out_id is None else str(out_id)[:200],
+                None if out_label is None else str(out_label)[:200],
+            ),
+        )
+
+    def _float_state_save(self) -> None:
+        payload = json.loads(self._body() or b"{}")
+        if "alpha" in payload:
+            try:
+                _float_state["alpha"] = max(0.3, min(1.0, float(payload["alpha"])))
+            except (TypeError, ValueError):
+                pass
+        if "character" in payload:
+            _float_state["character"] = str(payload.get("character") or "")
+        if "hotkey" in payload:
+            hotkey = clean_hotkey(payload.get("hotkey"))
+            if hotkey:
+                _float_state["hotkey"] = hotkey
+        if "hotkey_error" in payload:
+            _float_state["hotkey_error"] = str(payload.get("hotkey_error") or "")[:80]
+        if "out_id" in payload:
+            _float_state["out_id"] = str(payload.get("out_id") or "")[:200]
+        if "out_label" in payload:
+            _float_state["out_label"] = str(payload.get("out_label") or "")[:200]
+        if "sink_applied" in payload:
+            _float_state["sink_applied"] = str(payload.get("sink_applied") or "")[:200]
+        self._json(200, dict(_float_state))
+
+    def _float_close(self) -> None:
+        stopped = stop_float()
+        if stopped:
+            _float_state["sink_applied"] = ""     # 窗都关了，别让设置里还挂着上次的落点
+        self._json(200, {"ok": True, "stopped": stopped})
+
     # --- 静态文件 ---
 
     def _static(self, path: str) -> None:
@@ -479,10 +712,43 @@ class Handler(BaseHTTPRequestHandler):
         self._send(200, target.read_bytes(), mime, cache)
 
 
+def _port_taken(exc: OSError) -> bool:
+    """这个端口用不了：被别人占了，或者被系统保留着。
+
+    - Windows 已被占用：WinError 10048 / WSAEADDRINUSE
+    - Windows 被保留/独占（http.sys 之类先注册走了）：WinError 10013 / WSAEACCES
+    - 类 Unix 占用：EADDRINUSE（48 = macOS/BSD，98 = Linux）
+    """
+    if getattr(exc, "winerror", None) in (10048, 10013):
+        return True
+    return exc.errno in (errno.EADDRINUSE, errno.EACCES, 48, 98, 10048, 10013)
+
+
+def bind_server(host: str, port: int, tries: int = 12) -> tuple[ThreadingHTTPServer, int]:
+    """端口被别的程序占着就往后挪一个，而不是整个程序起不来。
+
+    默认从 8766 起：8765 归《足球经理 26》——它在启动时用 http.sys 注册
+    `HTTP://127.0.0.1:8765:127.0.0.1/`，别的工具（NG Regens Manager 之类）
+    要连它取数据。我们先绑上去的话，游戏反而起不来，所以干脆不去碰。
+    再被占了就继续往后挪，别硬绑崩在 traceback 上。
+    """
+    problem: OSError | None = None
+    for candidate in range(port, port + tries):
+        try:
+            return ThreadingHTTPServer((host, candidate), Handler), candidate
+        except OSError as exc:
+            if not _port_taken(exc):
+                raise
+            problem = exc
+    raise SystemExit(
+        f"  {port}–{port + tries - 1} 全被占着，换一个：python server.py --port 9000"
+    ) from problem
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="闪耀色彩复读机")
     parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument("--port", type=int, default=8766)
     parser.add_argument("--open", action="store_true", help="启动后打开浏览器")
     args = parser.parse_args()
 
@@ -492,9 +758,11 @@ def main() -> None:
         except (AttributeError, ValueError):
             pass
 
-    server = ThreadingHTTPServer((args.host, args.port), Handler)
-    url = f"http://{'127.0.0.1' if args.host in ('0.0.0.0', '::') else args.host}:{args.port}"
+    server, port = bind_server(args.host, args.port)
+    url = f"http://{'127.0.0.1' if args.host in ('0.0.0.0', '::') else args.host}:{port}"
     print("\n  闪耀色彩复读机 —— 29 种复读模式", flush=True)
+    if port != args.port:
+        print(f"  {args.port} 被别的程序占着，这次用 {port}（地址以这一行为准）", flush=True)
     print(f"  {url}", flush=True)
     print(f"  Fish Audio：{'已配置' if fish_key() else '未配置（点右上角设置）'}"
           f" · 语音识别：{'百炼' if dashscope_key() else '未配置'}", flush=True)

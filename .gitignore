@@ -9,6 +9,11 @@ config.json
 __pycache__/
 .shots/
 
+# 浮窗运行时留下的东西（进程号、上次拖到哪儿）
+.float.pid
+.float.pos
+.float.log
+
 # 编辑器 / 内部工作目录
 .vscode/
 .idea/

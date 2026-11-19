@@ -1,0 +1,110 @@
+/* 复读浮窗：一个没有标题栏的置顶小窗。
+   半透明是窗口级别的（Windows 层叠窗口，整窗一个 alpha），所以这里的颜色都写实色——
+   页面里再叠一层假透明只会变成发灰。透多少由设置里的滑杆决定，外面那层统一调。 */
+
+:root{
+  --ink:#221d29;
+  --muted:#7e7489;
+  --line:#e5d9f0;
+  --c:#d98cc0;                                              /* 角色的印象色，JS 改这一条 */
+  --c-on:#2a1f33;
+  --font:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+
+body{
+  position:relative;
+  display:flex;align-items:center;
+  padding:0 9px;
+  border:1px solid var(--line);
+  border-radius:15px;
+  background:linear-gradient(180deg,#fffdfe,#f4eef8);
+  font-family:var(--font);color:var(--ink);
+  overflow:hidden;
+  user-select:none;-webkit-user-select:none;
+}
+
+/* 拖动把手：标题栏没了，顶上这一小条是唯一「抓得住的地方」。
+   绝对定位，不占布局高度，这样整行仍然是垂直居中的。 */
+.grip{
+  position:absolute;top:2px;left:0;right:0;height:10px;
+  display:grid;place-items:center;cursor:grab;z-index:3;
+}
+.grip:active{cursor:grabbing}
+.grip span{width:26px;height:3px;border-radius:2px;background:#c9bed7;opacity:.85}
+
+.row{flex:1;min-width:0;display:flex;align-items:center;gap:8px;height:42px}
+
+/* 头像就是角色下拉：照片铺在圆形容器上，一个透明的原生 select 盖住它。
+   弹出的列表由系统画，不受这个小窗口的高度限制。 */
+.ava{
+  position:relative;flex:none;display:block;width:32px;height:32px;border-radius:50%;
+  background-color:#f6f1fa;background-position:center;background-size:cover;background-repeat:no-repeat;
+  box-shadow:0 0 0 1.5px #fff,0 0 0 3px color-mix(in srgb,var(--c) 58%,transparent),
+             0 2px 8px rgba(24,16,36,.16);
+  transition:transform .14s;
+}
+.ava:hover{transform:scale(1.05)}
+.ava:active{transform:scale(.96)}
+.ava:focus-within{outline:2px solid color-mix(in srgb,var(--c) 65%,#2a1f33);outline-offset:3px}
+.pick{
+  position:absolute;inset:0;width:100%;height:100%;
+  margin:0;padding:0;border:0;background:transparent;
+  opacity:0;cursor:pointer;font:inherit;
+  appearance:none;-webkit-appearance:none;
+}
+
+.field{flex:1;min-width:0;display:flex;align-items:center;gap:6px;height:42px;margin:0}
+
+.input{
+  flex:1;min-width:0;height:38px;padding:0 13px;border-radius:12px;
+  border:1px solid #dccfe8;
+  background:#fdfbfe;
+  font:inherit;font-size:13.5px;color:var(--ink);
+  outline:none;transition:border-color .16s,box-shadow .16s,background .16s;
+}
+.input::placeholder{color:var(--muted)}
+.input:focus{
+  border-color:color-mix(in srgb,var(--c) 62%,#dccfe8);
+  background:#fff;
+  box-shadow:0 0 0 3.5px color-mix(in srgb,var(--c) 18%,transparent);
+}
+
+.send{
+  flex:none;width:34px;height:34px;border:0;padding:0;border-radius:11px;
+  display:grid;place-items:center;cursor:pointer;color:var(--c-on);
+  background:linear-gradient(135deg,color-mix(in srgb,var(--c) 52%,#fff),var(--c));
+  box-shadow:0 3px 10px color-mix(in srgb,var(--c) 40%,transparent);
+  transition:transform .14s,filter .14s;
+}
+.send:hover{filter:brightness(1.05)}
+.send:active{transform:scale(.95)}
+.send svg{width:16px;height:16px}
+
+/* 关窗：平时很淡，鼠标进来才亮，别在游戏画面上抢眼 */
+.x{
+  flex:none;width:18px;height:18px;border:0;padding:0;border-radius:6px;
+  display:grid;place-items:center;cursor:pointer;
+  color:#a99cb8;background:transparent;opacity:.55;
+  transition:opacity .16s,color .16s,background .16s;
+}
+.x svg{width:11px;height:11px}
+body:hover .x{opacity:1}
+.x:hover{color:#8e2f47;background:#f7dde4}
+
+/* 状态不另占一行：合成中边框呼吸，出错转红并把原因写进占位文字 */
+.field.is-work .input{
+  border-color:color-mix(in srgb,var(--c) 82%,#dccfe8);
+  animation:fw-breathe 1.5s ease-in-out infinite;
+}
+.field.is-ok .input{border-color:color-mix(in srgb,var(--c) 46%,#dccfe8)}
+.field.is-bad .input{border-color:#c0475f;background:#fdf1f4}
+.field.is-bad .input::placeholder{color:#a22c48}
+@keyframes fw-breathe{
+  0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 0%,transparent)}
+  50%    {box-shadow:0 0 0 3.5px color-mix(in srgb,var(--c) 30%,transparent)}
+}
+@media (prefers-reduced-motion: reduce){
+  .field.is-work .input{animation:none}
+}

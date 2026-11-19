@@ -8,7 +8,8 @@
     "ノクチル",
     "シーズ",
     "コメティック",
-    "事務員"
+    "事務員",
+    "その他"
   ],
   "characters": [
     {
@@ -300,6 +301,56 @@
       "color": "#c3d825",
       "voice_id": "a061289170654e1a9dda177a28764651",
       "avatar": "avatars/hazuki.jpg"
+    },
+    {
+      "id": "nanami",
+      "name": "七海",
+      "zh": "七海",
+      "romaji": "Nanami",
+      "unit": "その他",
+      "color": "#3a7bd5",
+      "voice_id": "a33140041314425ebd7050bdcdb231ff",
+      "avatar": "avatars/nanami.svg"
+    },
+    {
+      "id": "gilgamesh",
+      "name": "吉尔伽美什",
+      "zh": "吉尔伽美什",
+      "romaji": "Gilgamesh",
+      "unit": "その他",
+      "color": "#b8860b",
+      "voice_id": "06cde08ab71349aca8670332fd9a910e",
+      "avatar": "avatars/gilgamesh.png"
+    },
+    {
+      "id": "tamamo",
+      "name": "玉藻十字",
+      "zh": "玉藻十字",
+      "romaji": "Tamamo Cross",
+      "unit": "その他",
+      "color": "#7b8ca6",
+      "voice_id": "5f48019971124b2781cf18b398930d45",
+      "avatar": "avatars/tamamo.svg"
+    },
+    {
+      "id": "suisei",
+      "name": "星街彗星",
+      "zh": "星街彗星",
+      "romaji": "Hoshimachi Suisei",
+      "unit": "その他",
+      "color": "#5fc8f0",
+      "voice_id": "3ae335faf7b4498993d63ad9185ea6db",
+      "avatar": "avatars/suisei.svg"
+    },
+    {
+      "id": "liyuu",
+      "name": "Liyuu",
+      "zh": "Liyuu",
+      "romaji": "",
+      "unit": "その他",
+      "color": "#2fb3a0",
+      "voice_id": "7497e1e9cb9b42fbb807aad5a0e9cd2a",
+      "avatar": "avatars/liyuu.svg"
     }
   ]
 }

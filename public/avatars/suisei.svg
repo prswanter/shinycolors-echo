@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="星街彗星 Hoshimachi Suisei">
+  <defs>
+    <linearGradient id="comet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7fe0f5" />
+      <stop offset="45%" stop-color="#3f8fd0" />
+      <stop offset="100%" stop-color="#1b2a5e" />
+    </linearGradient>
+    <g id="star">
+      <path d="M0 -7 L1.8 -1.8 L7 0 L1.8 1.8 L0 7 L-1.8 1.8 L-7 0 L-1.8 -1.8 Z" />
+    </g>
+  </defs>
+  <rect width="128" height="128" fill="url(#comet)" />
+  <g fill="#ffffff" fill-opacity="0.45">
+    <use href="#star" transform="translate(22 22) scale(0.85)" />
+    <use href="#star" transform="translate(104 32) scale(0.6)" />
+    <use href="#star" transform="translate(30 104) scale(0.5)" />
+    <use href="#star" transform="translate(104 100) scale(0.42)" />
+  </g>
+  <text x="64" y="60" text-anchor="middle" fill="#ffffff" font-size="36" font-weight="700"
+        font-family="'Yu Gothic','Noto Sans SC','Microsoft YaHei',sans-serif" letter-spacing="3">星街</text>
+  <text x="64" y="80" text-anchor="middle" fill="#ffffff" fill-opacity="0.82" font-size="11"
+        font-family="Georgia,'Times New Roman',serif" letter-spacing="2.4">SUISEI</text>
+</svg>

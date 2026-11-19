@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="七海 Nanami">
+  <defs>
+    <linearGradient id="sea" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8fd3f4" />
+      <stop offset="48%" stop-color="#3a7bd5" />
+      <stop offset="100%" stop-color="#1b3a63" />
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" fill="url(#sea)" />
+  <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-opacity="0.5">
+    <path d="M-4 84 q16 -8 32 0 t32 0 t32 0 t32 0" stroke-width="3" />
+    <path d="M-4 100 q16 -8 32 0 t32 0 t32 0 t32 0" stroke-width="2.2" stroke-opacity="0.32" />
+    <path d="M-4 114 q16 -8 32 0 t32 0 t32 0 t32 0" stroke-width="1.6" stroke-opacity="0.2" />
+  </g>
+  <text x="64" y="56" text-anchor="middle" fill="#ffffff" font-size="40" font-weight="700"
+        font-family="'Yu Gothic','Noto Sans SC','Microsoft YaHei',sans-serif" letter-spacing="4">七海</text>
+  <text x="64" y="72" text-anchor="middle" fill="#ffffff" fill-opacity="0.82" font-size="12"
+        font-family="Georgia,'Times New Roman',serif" letter-spacing="3">NANAMI</text>
+</svg>

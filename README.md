@@ -12,7 +12,8 @@
 
 角色：illumination STARS、L'Antica、放課後クライマックスガールズ、アルストロメリア、
 ストレイライト、ノクチル、シーズ、コメティック 的 28 位小偶像，加上事务员七草叶月，共 29 位，
-每个人一把自己的嗓子。
+每个人一把自己的嗓子。「その他」组里另挂了几位客串：七海（Nanami）、吉尔伽美什（Gilgamesh）、
+玉藻十字（Tamamo Cross）、星街彗星（Hoshimachi Suisei）、Liyuu，各自用 Fish Audio 上的音色，共 34 位。
 
 ![选人页](docs/screenshot-home.png)
 
@@ -78,12 +79,12 @@ python server.py --open
 
 ```
 server.py            一个文件的后端：/api/tts、/api/stt、/api/config 和静态文件
-characters.json      29 位：名字、分组、印象色、Fish 音色 ID、头像
+characters.json      34 位：名字、分组、印象色、Fish 音色 ID、头像
 public/
   index.html         选人页 + 复读页 + 设置面板
   style.css          浅色 + 她的印象色
   app.js             录音、断句、听写、播放（没有对话逻辑）
-  avatars/           29 张头像
+  avatars/           34 张头像（nanami、tamamo、suisei、liyuu 的 svg 是占位图）
 config.example.json  密钥模板，复制成 config.json 也行
 docs/                README 里那两张截图
 .cache/tts/          合成过的音频（按内容缓存，同一句不再花钱），可随时删
